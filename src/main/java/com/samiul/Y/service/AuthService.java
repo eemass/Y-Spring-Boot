@@ -1,5 +1,6 @@
 package com.samiul.Y.service;
 
+import com.samiul.Y.dto.LoginRequest;
 import com.samiul.Y.dto.SignupRequest;
 import com.samiul.Y.dto.UserResponse;
 import com.samiul.Y.model.User;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -21,7 +23,7 @@ public class AuthService {
     private final BCryptPasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
 
-    public UserResponse signup(SignupRequest req, HttpServletResponse response) {
+    public UserResponse signup(SignupRequest req, HttpServletResponse res) {
 
         if (userRepository.findByUsername(req.getUsername()).isPresent()) {
             throw new IllegalArgumentException("Username already taken.");
@@ -54,8 +56,22 @@ public class AuthService {
         User savedUser = userRepository.save(newUser);
 
         String token = jwtUtils.generateToken(savedUser.getId().toString());
-        jwtUtils.setTokenCookie(response, token);
+        jwtUtils.setTokenCookie(res, token);
 
         return new UserResponse(savedUser);
+    }
+
+    public UserResponse login(LoginRequest req, HttpServletResponse res) {
+        User user = userRepository.findByUsername(req.getUsername()).orElseThrow(() -> new IllegalArgumentException("Invalid username or password."));
+
+        boolean isPasswordCorrect = passwordEncoder.matches(req.getPassword(), user.getPassword());
+
+        if (!isPasswordCorrect) throw new IllegalArgumentException("Invalid username or password.");
+
+        String token = jwtUtils.generateToken(user.getId().toString());
+        jwtUtils.setTokenCookie(res, token);
+
+        return new UserResponse(user);
+
     }
 }
