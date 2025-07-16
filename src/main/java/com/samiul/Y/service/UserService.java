@@ -1,7 +1,10 @@
 package com.samiul.Y.service;
 
 import com.samiul.Y.dto.UserResponse;
+import com.samiul.Y.model.Notification;
+import com.samiul.Y.model.NotificationType;
 import com.samiul.Y.model.User;
+import com.samiul.Y.repository.NotificationRepository;
 import com.samiul.Y.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
@@ -19,6 +22,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
+    private final NotificationRepository notificationRepository;
     private final MongoTemplate mongoTemplate;
 
     public UserResponse getUserProfile(String username) {
@@ -44,5 +48,45 @@ public class UserService {
                 .limit(4)
                 .map(UserResponse::new)
                 .toList();
+    }
+
+    public String followUnfollowUser(String targetUserId, User currentUser) {
+        if (targetUserId.equals(currentUser.getId().toHexString())) {
+            throw new IllegalArgumentException("You cannot follow this user.");
+        }
+
+        ObjectId targetId = new ObjectId(targetUserId);
+        User userToModify = userRepository.findById(targetId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not exist."));
+
+        User freshCurrentUser = userRepository.findById(currentUser.getId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "User not found."));
+
+        boolean isFollowing = freshCurrentUser.getFollowing().contains(targetId);
+
+        if (isFollowing) {
+            freshCurrentUser.getFollowing().remove(targetId);
+            userToModify.getFollowers().remove(freshCurrentUser.getId());
+            userRepository.save(freshCurrentUser);
+            userRepository.save(userToModify);
+
+            return "User unfollowed successfully.";
+        } else {
+            freshCurrentUser.getFollowing().add(targetId);
+            userToModify.getFollowers().add(freshCurrentUser.getId());
+            userRepository.save(freshCurrentUser);
+            userRepository.save(userToModify);
+
+            Notification notification = Notification.builder()
+                    .from(freshCurrentUser.getId())
+                    .to(userToModify.getId())
+                    .type(NotificationType.FOLLOW)
+                    .build();
+
+            notificationRepository.save(notification);
+
+            return "User followed successfully.";
+        }
+
     }
 }
