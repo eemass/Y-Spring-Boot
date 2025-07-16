@@ -6,6 +6,7 @@ import com.samiul.Y.dto.UserResponse;
 import com.samiul.Y.model.User;
 import com.samiul.Y.repository.UserRepository;
 import com.samiul.Y.security.JwtUtils;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -73,5 +74,14 @@ public class AuthService {
 
         return new UserResponse(user);
 
+    }
+
+    public void logout(HttpServletResponse res) {
+        Cookie cookie = new Cookie("token", null);
+        cookie.setMaxAge(0);
+        cookie.setPath("/");
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true);
+        res.addCookie(cookie);
     }
 }

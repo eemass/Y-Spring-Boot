@@ -48,13 +48,7 @@ public class AuthController {
 
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletResponse res) {
-        Cookie cookie = new Cookie("token", null);
-        cookie.setMaxAge(0);
-        cookie.setPath("/");
-        cookie.setHttpOnly(true);
-        cookie.setSecure(true);
-        res.addCookie(cookie);
-
+        authService.logout(res);
         return ResponseEntity.ok(Map.of("message", "Logged out successfully"));
     }
 
