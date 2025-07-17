@@ -7,5 +7,5 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import java.util.List;
 
 public interface NotificationRepository extends MongoRepository<Notification, ObjectId> {
-    public List<Notification> findByTo(ObjectId to);
+    List<Notification> findByTo(ObjectId to);
 }

@@ -1,6 +1,7 @@
 package com.samiul.Y.controller;
 
 import com.samiul.Y.dto.UserResponse;
+import com.samiul.Y.dto.UserUpdateRequest;
 import com.samiul.Y.model.User;
 import com.samiul.Y.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -8,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -36,5 +38,12 @@ public class UserController {
         String message = userService.followUnfollowUser(id, currentUser);
 
         return ResponseEntity.ok(Map.of("message", message));
+    }
+
+    @PostMapping("/update")
+    public ResponseEntity<?> updateUser(@RequestBody UserUpdateRequest request, @AuthenticationPrincipal User currentUser) throws IOException {
+        UserResponse updatedUser = userService.updateUser(request, currentUser);
+
+        return ResponseEntity.ok(updatedUser);
     }
 }

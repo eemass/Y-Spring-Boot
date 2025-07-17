@@ -20,8 +20,11 @@ public class UserResponse {
     private String email;
     private String profileImg;
     private String coverImg;
+    private String bio;
+    private String link;
     private List<String> followers;
     private List<String> following;
+    private List<String> likedPosts;
 
     public UserResponse(User user) {
         this.id = user.getId().toHexString(); // ObjectId → String
@@ -30,6 +33,8 @@ public class UserResponse {
         this.email = user.getEmail();
         this.profileImg = user.getProfileImg();
         this.coverImg = user.getCoverImg();
+        this.bio = user.getBio();
+        this.link = user.getLink();
         this.followers = user.getFollowers()
                 .stream()
                 .map(ObjectId::toHexString)
@@ -39,6 +44,12 @@ public class UserResponse {
                 .stream()
                 .map(ObjectId::toHexString)
                 .collect(Collectors.toList());
+
+        this.likedPosts = user.getLikedPosts()
+                .stream()
+                .map(ObjectId::toHexString)
+                .collect(Collectors.toList());
+
     }
 
 }

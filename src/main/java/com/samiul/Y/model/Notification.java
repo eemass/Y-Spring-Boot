@@ -12,6 +12,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
+import java.util.List;
 
 @Document(collection = "notifications")
 @Data
@@ -26,9 +27,9 @@ public class Notification {
     private ObjectId from;
     private ObjectId to;
 
-    private NotificationType type;
-
     private boolean read = false;
+
+    private NotificationType type;
 
     @CreatedDate
     private Instant createdAt;
@@ -36,3 +37,4 @@ public class Notification {
     @LastModifiedDate
     private Instant updatedAt;
 }
+

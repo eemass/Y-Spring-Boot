@@ -1,5 +1,6 @@
 package com.samiul.Y.config;
 
+import com.samiul.Y.repository.NotificationRepository;
 import com.samiul.Y.repository.UserRepository;
 import com.samiul.Y.security.JwtAuthFilter;
 import com.samiul.Y.security.JwtUtils;
@@ -26,7 +27,8 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/auth/signup",
                                 "/api/auth/login",
-                                "/api/auth/logout"
+                                "/api/auth/logout",
+                                "/api/notifications/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
