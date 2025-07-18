@@ -17,6 +17,7 @@ import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationResults;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -32,6 +33,8 @@ public class UserService {
     private final NotificationRepository notificationRepository;
     private final MongoTemplate mongoTemplate;
     private final Cloudinary cloudinary;
+    private final BCryptPasswordEncoder passwordEncoder;
+
 
     public UserResponse getUserProfile(String username) {
         User user = userRepository.findByUsername(username).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not exist."));
@@ -152,6 +155,29 @@ public class UserService {
 
         return new UserResponse(user);
 
+    }
+
+    public User updatePassword(String userId, String currentPassword, String newPassword) {
+        if (currentPassword == null || newPassword == null || currentPassword.trim().isEmpty() || newPassword.trim().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Please provide both current and new passwords.");
+        }
+
+        User user = userRepository.findById(new ObjectId(userId)).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found."));
+
+        boolean isMatch = passwordEncoder.matches(currentPassword, user.getPassword());
+
+        if (!isMatch) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid password provided.");
+        }
+
+        if (newPassword.length() < 6) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Password must be at least 6 characters long.");
+        }
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        user.setUpdatedAt(Instant.now());
+
+        return userRepository.save(user);
     }
 
 

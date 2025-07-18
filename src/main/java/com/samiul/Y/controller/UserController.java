@@ -1,5 +1,6 @@
 package com.samiul.Y.controller;
 
+import com.samiul.Y.dto.PasswordUpdateRequest;
 import com.samiul.Y.dto.UserResponse;
 import com.samiul.Y.dto.UserUpdateRequest;
 import com.samiul.Y.model.User;
@@ -45,5 +46,14 @@ public class UserController {
         UserResponse updatedUser = userService.updateUser(request, currentUser);
 
         return ResponseEntity.ok(updatedUser);
+    }
+
+    @PostMapping("/updatePassword")
+    public ResponseEntity<?> updatePassword(@RequestBody PasswordUpdateRequest request, @AuthenticationPrincipal User currentUser) {
+        User updatedUser = userService.updatePassword(currentUser.getId().toHexString(), request.getCurrentPassword(), request.getNewPassword());
+
+        UserResponse response = new UserResponse(updatedUser);
+
+        return ResponseEntity.ok(response);
     }
 }
