@@ -8,9 +8,7 @@ import com.samiul.Y.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -27,4 +25,9 @@ public class NotificationController {
         return ResponseEntity.ok(notifications);
     }
 
+    @DeleteMapping("/")
+    public ResponseEntity<?> deleteNotifications(@AuthenticationPrincipal User currentUser) {
+        notificationService.deleteNotifications(currentUser);
+        return ResponseEntity.ok("Notifications deleted successfully.");
+    }
 }

@@ -42,4 +42,9 @@ public class NotificationService {
             return dto;
         }).toList();
     }
+
+    public void deleteNotifications(User currentUser) {
+        notificationRepository.deleteByTo(currentUser.getId());
+        return;
+    }
 }
