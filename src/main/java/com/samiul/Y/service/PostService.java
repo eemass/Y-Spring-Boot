@@ -7,7 +7,9 @@ import com.samiul.Y.repository.PostRepository;
 import com.samiul.Y.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Comparator;
 import java.util.List;
@@ -20,56 +22,45 @@ public class PostService {
     private final UserRepository userRepository;
 
     public List<PostResponse> getAllPosts() {
-        List<Post> posts = postRepository.findAll();
-
-        return posts.stream()
+        return postRepository.findAll().stream()
                 .sorted(Comparator.comparing(Post::getCreatedAt).reversed())
                 .map(post -> {
-                    PostResponse response = new PostResponse();
-                    response.setId(post.getId().toHexString());
+                    User postUser = userRepository.findById(post.getUser())
+                            .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Post user not found."));
 
-                    User user = userRepository.findById(post.getUser()).orElse(null);
-                    PostResponse.SimpleUser userDto = new PostResponse.SimpleUser();
+                    List<PostResponse.CommentResponse> commentResponses = post.getComments().stream()
+                            .map(comment -> {
+                                User commentUser = userRepository.findById(comment.getUser())
+                                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Comment user not found."));
+                                return new PostResponse.CommentResponse(comment, commentUser);
+                            })
+                            .toList();
 
-                    if (user != null) {
-                        userDto.setId(user.getId().toHexString());
-                        userDto.setFullName(user.getFullName());
-                        userDto.setUsername(user.getUsername());
-                        userDto.setProfileImg(user.getProfileImg());
-                    }
-
-                    response.setUser(userDto);
-
-                    response.setText(post.getText());
-                    response.setImage(post.getImage());
-                    response.setCreatedAt(post.getCreatedAt());
-                    response.setUpdatedAt(post.getUpdatedAt());
-
-                    response.setLikes(post.getLikes().stream()
-                            .map(ObjectId::toHexString)
-                            .collect(Collectors.toList()));
-
-                    List<PostResponse.CommentResponse> comments = post.getComments().stream().map(c -> {
-                        PostResponse.CommentResponse commentResponse = new PostResponse.CommentResponse();
-                        commentResponse.setText(c.getText());
-                        User commentUser = userRepository.findById(c.getUser()).orElse(null);
-                        PostResponse.SimpleUser commentUserDto = new PostResponse.SimpleUser();
-                        if (commentUser != null) {
-                            commentUserDto.setId(commentUser.getId().toHexString());
-                            commentUserDto.setUsername(commentUser.getUsername());
-                            commentUserDto.setFullName(commentUser.getFullName());
-                            commentUserDto.setProfileImg(commentUser.getProfileImg());
-                        }
-                        commentResponse.setUser(commentUserDto);
-
-                        return commentResponse;
-                    }).collect(Collectors.toList());
-
-                    response.setComments(comments);
-
-                    return response;
-
+                    return new PostResponse(post, new PostResponse.SimpleUser(postUser), commentResponses);
                 })
-                .collect(Collectors.toList());
+                .toList();
+    }
+
+    public List<PostResponse> getLikedPosts(ObjectId userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not exist."));
+
+        return postRepository.findByIdIn(user.getLikedPosts()).stream()
+                .sorted(Comparator.comparing(Post::getCreatedAt).reversed())
+                .map(post -> {
+                    User postUser = userRepository.findById(post.getUser())
+                            .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Post user not found."));
+
+                    List<PostResponse.CommentResponse> commentResponses = post.getComments().stream()
+                            .map(comment -> {
+                                User commentUser = userRepository.findById(comment.getUser())
+                                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Comment user not found."));
+                                return new PostResponse.CommentResponse(comment, commentUser);
+                            })
+                            .toList();
+
+                    return new PostResponse(post, new PostResponse.SimpleUser(postUser), commentResponses);
+                })
+                .toList();
     }
 }
