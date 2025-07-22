@@ -1,15 +1,19 @@
 package com.samiul.Y.controller;
 
+import com.samiul.Y.dto.CreatePostRequest;
 import com.samiul.Y.dto.PostResponse;
+import com.samiul.Y.model.User;
 import com.samiul.Y.repository.PostRepository;
 import com.samiul.Y.service.PostService;
 import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+
+import java.io.IOException;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/post")
@@ -25,5 +29,29 @@ public class PostController {
     @GetMapping("/liked/{id}")
     public ResponseEntity<?> getLikedPosts(@PathVariable("id") ObjectId userId) {
         return ResponseEntity.ok(postService.getLikedPosts(userId));
+    }
+
+    @GetMapping("/following")
+    public ResponseEntity<?> getFollowingPosts(@AuthenticationPrincipal User currentUser) {
+        return ResponseEntity.ok(postService.getFollowingPosts(currentUser));
+    }
+
+    @GetMapping("/user/{username}")
+    public ResponseEntity<?> getUserPosts(@PathVariable String username) {
+        return ResponseEntity.ok(postService.getUserPosts(username));
+    }
+
+    @PostMapping("/create")
+    public ResponseEntity<?> createPost(@RequestBody CreatePostRequest request, @AuthenticationPrincipal User currentUser) throws IOException {
+        PostResponse response = postService.createPost(request, currentUser);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @PostMapping("/like/{id}")
+    public ResponseEntity<?> likeUnlikePost(@PathVariable("id") ObjectId postId, @AuthenticationPrincipal User currentUser) {
+        List<String> updatedLikes = postService.likeUnlikePost(postId, currentUser.getId());
+
+        return ResponseEntity.ok(updatedLikes);
     }
 }

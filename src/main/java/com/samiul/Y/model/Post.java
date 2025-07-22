@@ -30,6 +30,7 @@ public class Post {
     private String text;
     private String image;
 
+    @Builder.Default
     private List<ObjectId> likes = new ArrayList<>();
 
     @Builder.Default
