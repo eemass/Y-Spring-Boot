@@ -1,20 +1,15 @@
-FROM eclipse-temurin:24-jdk AS build
-WORKDIR /app
-COPY . .
-# Ensure mvnw is executable
-RUN chmod +x mvnw
-# Verify maven-wrapper.jar exists
-RUN ls -l .mvn/wrapper/
-# Build the JAR
-RUN ./mvnw clean package -DskipTests
-# Debug: List contents of target/
-RUN ls -l /app/target/
+# Use a minimal OpenJDK base image
+FROM openjdk:21-jdk-slim
 
-FROM eclipse-temurin:24-jre
+# Create and set working directory
 WORKDIR /app
-# Copy the specific JAR
-COPY --from=build /app/target/Y-0.0.1-SNAPSHOT.jar app.jar
-# Debug: Verify app.jar exists
-RUN ls -l /app/
+
+# Copy the built jar from Maven target directory
+ARG JAR_FILE=target/*.jar
+COPY ${JAR_FILE} app.jar
+
+# Expose port (Spring Boot default)
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "/app.jar"]
+
+# Run the application
+ENTRYPOINT ["java", "-jar", "app.jar"]
