@@ -1,6 +1,7 @@
 package com.samiul.Y.service;
 
 import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 import com.samiul.Y.dto.CreatePostRequest;
 import com.samiul.Y.dto.NotificationResponse;
 import com.samiul.Y.dto.PostResponse;
@@ -164,5 +165,51 @@ public class PostService {
 
             return post.getLikes().stream().map(ObjectId::toHexString).toList();
         }
+    }
+
+    public List<PostResponse.CommentResponse> commentPost(ObjectId postId, ObjectId userId, String text) {
+        if (text == null || text.trim().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Comment must include text.");
+        }
+
+        Post post = postRepository.findById(postId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found."));
+
+        Post.Comment newComment = Post.Comment.builder()
+                .text(text)
+                .user(userId)
+                .build();
+
+        post.getComments().add(newComment);
+        postRepository.save(post);
+
+        notificationRepository.save( Notification.builder()
+                        .from(userId)
+                        .to(post.getUser())
+                        .type(NotificationType.comment)
+                .build());
+
+        return post.getComments().stream().map(comment -> {
+            User commentUser = userRepository.findById(comment.getUser()).orElse(null);
+            return new PostResponse.CommentResponse(comment, commentUser);
+        }).toList();
+    }
+
+    public void deletePost(ObjectId postId, ObjectId userId) {
+        Post post = postRepository.findById(postId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found."));
+
+        if (!post.getUser().equals(userId)) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "You are not authorized to delete this post.");
+        }
+
+        if (post.getImage() != null && !post.getImage().isBlank()) {
+            String publicId = post.getImage().substring(post.getImage().lastIndexOf("/") + 1).split("\\.")[0];
+            try {
+                cloudinary.uploader().destroy(publicId, ObjectUtils.emptyMap());
+            } catch (IOException e) {
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to delete image from Cloudinary.");
+            }
+        }
+
+        postRepository.deleteById(postId);
     }
 }

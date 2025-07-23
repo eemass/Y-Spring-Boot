@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/post")
@@ -53,5 +54,19 @@ public class PostController {
         List<String> updatedLikes = postService.likeUnlikePost(postId, currentUser.getId());
 
         return ResponseEntity.ok(updatedLikes);
+    }
+
+    @PostMapping("/comment/{id}")
+    public ResponseEntity<?> commentPost(@PathVariable("id") ObjectId postId, @AuthenticationPrincipal User currentUser, @RequestBody Map<String, String> body) {
+        List<PostResponse.CommentResponse> updatedComments = postService.commentPost(postId, currentUser.getId(), body.get("text"));
+
+        return ResponseEntity.ok(updatedComments);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deletePost(@PathVariable("id") ObjectId postId, @AuthenticationPrincipal User currentUser) {
+        postService.deletePost(postId, currentUser.getId());
+
+        return ResponseEntity.ok(Map.of("message", "Post deleted successfully."));
     }
 }
