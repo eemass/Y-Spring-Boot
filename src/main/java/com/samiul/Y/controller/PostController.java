@@ -63,10 +63,10 @@ public class PostController {
         return ResponseEntity.ok(updatedComments);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> deletePost(@PathVariable("id") ObjectId postId, @AuthenticationPrincipal User currentUser) {
         postService.deletePost(postId, currentUser.getId());
 
-        return ResponseEntity.ok(Map.of("message", "Post deleted successfully."));
+        return ResponseEntity.ok("Post deleted successfully.");
     }
 }
