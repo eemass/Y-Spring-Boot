@@ -1,14 +1,26 @@
-# Use a minimal OpenJDK base image
-FROM openjdk:21-jdk-slim
+# ---------- Build Stage ----------
+FROM eclipse-temurin:21-jdk-jammy AS builder
 
-# Create and set working directory
+# Set working directory
 WORKDIR /app
 
-# Copy the built jar from Maven target directory
-ARG JAR_FILE=target/*.jar
-COPY ${JAR_FILE} app.jar
+# Copy everything into the container
+COPY . .
 
-# Expose port (Spring Boot default)
+# Build the application using Maven
+RUN ./mvnw clean package -DskipTests
+
+
+# ---------- Runtime Stage ----------
+FROM eclipse-temurin:21-jre-jammy
+
+# Set working directory for runtime container
+WORKDIR /app
+
+# Copy the built jar from the build stage
+COPY --from=builder /app/target/*.jar app.jar
+
+# Expose port 8080 (default for Spring Boot)
 EXPOSE 8080
 
 # Run the application
