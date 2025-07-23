@@ -3,7 +3,6 @@ package com.samiul.Y.service;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import com.samiul.Y.dto.CreatePostRequest;
-import com.samiul.Y.dto.NotificationResponse;
 import com.samiul.Y.dto.PostResponse;
 import com.samiul.Y.model.Notification;
 import com.samiul.Y.model.NotificationType;
@@ -23,7 +22,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -120,7 +118,7 @@ public class PostService {
 
         String imageUrl = null;
         if (request.getImage() != null && !request.getImage().isBlank()) {
-            Map uploadResult = cloudinary.uploader().upload(request.getImage(), Map.of());
+            Map<String, Object> uploadResult = cloudinary.uploader().upload(request.getImage(), Map.of());
             imageUrl = (String) uploadResult.get("secure_url");
         }
 
@@ -148,7 +146,6 @@ public class PostService {
             userRepository.save(user);
             postRepository.save(post);
 
-            return post.getLikes().stream().map(ObjectId::toHexString).toList();
         } else {
             post.getLikes().add(userId);
             user.getLikedPosts().add(postId);
@@ -163,8 +160,8 @@ public class PostService {
 
             notificationRepository.save(notification);
 
-            return post.getLikes().stream().map(ObjectId::toHexString).toList();
         }
+        return post.getLikes().stream().map(ObjectId::toHexString).toList();
     }
 
     public List<PostResponse.CommentResponse> commentPost(ObjectId postId, ObjectId userId, String text) {
