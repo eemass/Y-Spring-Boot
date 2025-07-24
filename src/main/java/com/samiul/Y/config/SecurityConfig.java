@@ -22,13 +22,14 @@ public class SecurityConfig {
 
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http,@Qualifier("customCorsConfigurationSource") CorsConfigurationSource corsConfigSource) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http,
+                                                   @Qualifier("customCorsConfigurationSource") CorsConfigurationSource corsConfigSource) throws Exception {
 
         return http
                 .cors(cors -> cors.configurationSource(corsConfigSource))
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.OPTIONS, "/api/**").permitAll()
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/auth/login", "/api/auth/signup", "/api/auth/logout").permitAll()
                         .requestMatchers("/api/**").authenticated()
                 )
