@@ -46,6 +46,8 @@ public class JwtUtils {
         cookie.setPath("/");
         cookie.setMaxAge(15 * 24 * 60 * 60);
 
+        cookie.setAttribute("SameSite", "None");
+
         response.addCookie(cookie);
     }
 }
