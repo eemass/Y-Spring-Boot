@@ -82,6 +82,7 @@ public class AuthService {
         cookie.setPath("/");
         cookie.setHttpOnly(true);
         cookie.setSecure(true);
+        cookie.setAttribute("SameSite", "None");
         res.addCookie(cookie);
     }
 }
