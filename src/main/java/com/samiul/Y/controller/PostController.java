@@ -67,6 +67,6 @@ public class PostController {
     public ResponseEntity<?> deletePost(@PathVariable("id") ObjectId postId, @AuthenticationPrincipal User currentUser) {
         postService.deletePost(postId, currentUser.getId());
 
-        return ResponseEntity.ok("Post deleted successfully.");
+        return ResponseEntity.ok(Map.of("message", "Post deleted successfully."));
     }
 }
