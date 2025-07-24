@@ -27,7 +27,7 @@ public class PostController {
         return ResponseEntity.ok(postService.getAllPosts());
     }
 
-    @GetMapping("/liked/{id}")
+    @GetMapping("/likes/{id}")
     public ResponseEntity<?> getLikedPosts(@PathVariable("id") ObjectId userId) {
         return ResponseEntity.ok(postService.getLikedPosts(userId));
     }

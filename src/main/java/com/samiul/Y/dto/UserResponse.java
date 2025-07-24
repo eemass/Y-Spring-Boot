@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.bson.types.ObjectId;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -22,6 +23,7 @@ public class UserResponse {
     private String coverImg;
     private String bio;
     private String link;
+    private Instant createdAt;
     private List<String> followers;
     private List<String> following;
     private List<String> likedPosts;
@@ -35,6 +37,7 @@ public class UserResponse {
         this.coverImg = user.getCoverImg();
         this.bio = user.getBio();
         this.link = user.getLink();
+        this.createdAt = user.getCreatedAt();
         this.followers = user.getFollowers()
                 .stream()
                 .map(ObjectId::toHexString)
