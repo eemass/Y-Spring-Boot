@@ -11,6 +11,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/notifications")
@@ -28,6 +29,6 @@ public class NotificationController {
     @DeleteMapping("/")
     public ResponseEntity<?> deleteNotifications(@AuthenticationPrincipal User currentUser) {
         notificationService.deleteNotifications(currentUser);
-        return ResponseEntity.ok("Notifications deleted successfully.");
+        return ResponseEntity.ok(Map.of("message", "Notifications deleted successfully."));
     }
 }
