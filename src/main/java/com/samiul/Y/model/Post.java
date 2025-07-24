@@ -47,6 +47,8 @@ public class Post {
     @AllArgsConstructor
     @Builder
     public static class Comment {
+        @JsonProperty("_id")
+        private ObjectId id;
         private String text;
         private ObjectId user;
     }
